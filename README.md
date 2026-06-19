@@ -17,7 +17,7 @@ B站视频演示了完整使用过程：
 ## 油猴脚本ewt360.js
 
 ### 功能
-在电脑端打开课程页面时，自动执行完成课程的操作。
+在电脑端打开课程页面https://teacher.ewt360.com/ewtbend/bend/index/index.html#/student/homework选择课程进行完成课程。
 
 ### 使用前提
 - 浏览器已安装 Tampermonkey 扩展
