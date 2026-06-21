@@ -7,9 +7,9 @@ BASE_URL = "https://gateway.ewt360.com"
 UA = "Mozilla/5.0"
 
 
-def get_report_id(paper_id: str, token: str) -> str:
+def get_report_id(paper_id: str, token: str, biz_code: str = "201") -> str:
     url = f"{BASE_URL}/api/answerprod/web/answer/report"
-    params = {"paperId": paper_id, "platform": "1", "bizCode": "205", "token": token}
+    params = {"paperId": paper_id, "platform": "1", "bizCode": biz_code, "token": token}
     resp = requests.get(url, params=params, headers={"User-Agent": UA})
     resp.raise_for_status()
     data = resp.json()
@@ -22,7 +22,7 @@ def get_questions(paper_id: str, report_id: str, token: str) -> list[dict[str, A
     url = f"{BASE_URL}/api/answerprod/common/answer/sheet/getAnswerSheetSubGroup"
     body = {
         "paperId": paper_id, "reportId": report_id, "platform": "1",
-        "bizCode": "205", "homeworkId": "0", "client": 4,
+        "bizCode": "201", "homeworkId": "0", "client": 4,
     }
     resp = requests.post(url, json=body, headers={"User-Agent": UA, "token": token})
     resp.raise_for_status()
@@ -45,7 +45,7 @@ def get_questions(paper_id: str, report_id: str, token: str) -> list[dict[str, A
 def update_report(paper_id: str, report_id: str, token: str) -> None:
     url = f"{BASE_URL}/api/answerprod/web/answer/submitpaper"
     body = {
-        "paperId": paper_id, "reportId": report_id, "bizCode": "205",
+        "paperId": paper_id, "reportId": report_id, "bizCode": "201",
         "platform": "1", "totalSeconds": 600, "homeworkId": "0",
     }
     resp = requests.post(url, json=body, headers={"User-Agent": UA, "token": token})
@@ -58,7 +58,7 @@ def get_answer(paper_id: str, report_id: str, question_id: str, token: str) -> d
     url = f"{BASE_URL}/api/answerprod/web/answer/simple/question/analysis"
     body = {
         "paperId": paper_id, "reportId": report_id, "platform": "1",
-        "questionId": question_id, "bizCode": "205", "homeworkId": "0", "client": 4,
+        "questionId": question_id, "bizCode": "201", "homeworkId": "0", "client": 4,
     }
     resp = requests.post(url, json=body, headers={"User-Agent": UA, "token": token})
     resp.raise_for_status()
@@ -93,7 +93,7 @@ def submit_answers(paper_id: str, report_id: str, questions: list[dict[str, Any]
 
 
 def clean_html(text: str) -> str:
-    text = re.sub(r"<img[^>]*Wirisformula[^>]*>", "[图片]", text)
+    text = re.sub(r"<img[^>]*Wirisformula[^>]*>", "[公式]", text)
     text = re.sub(r"<br[^>]*>", "\n", text)
     text = re.sub(r"<[^>]+>", "", text)
     text = text.replace("&ldquo;", "\u201c").replace("&rdquo;", "\u201d")
@@ -106,16 +106,6 @@ def clean_html(text: str) -> str:
 
 def extract_opts(right_answer: list) -> list[str]:
     return [x.strip() for x in right_answer if re.fullmatch(r"[A-Z]+", x.strip())]
-
-
-def fmt_lines(text: str, w: int) -> list[str]:
-    out = []
-    for line in text.split("\n"):
-        while len(line) > w:
-            out.append(line[:w])
-            line = line[w:]
-        out.append(line)
-    return out
 
 
 def main():
@@ -172,7 +162,7 @@ def main():
         if choice_answers:
             ans = input(f"检测到 {len(choice_answers)} 道选择题答案，提交到云端? (y/n): ").strip().lower()
             if ans == "y":
-                new_rid = get_report_id(paper_id, token)
+                new_rid = get_report_id(paper_id, token, biz_code="205")
                 ok = submit_answers(paper_id, new_rid, questions, choice_answers, token)
                 print("提交成功" if ok else "提交失败")
             else:
