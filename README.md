@@ -21,8 +21,7 @@
 关于batch sign的算法
 >算法类型:HMACSHA1
 
->key:https://gateway.ewt360.com/api/videoplayerprod/videoplayer/getPlayerGlobalConf 动态获取secret sessionId作为
-标识
+>key:动态获取https://gateway.ewt360.com/api/videoplayerprod/videoplayer/getPlayerGlobalConf  secret为key sessionId作为标识
 
 构造app端
 
