@@ -24,4 +24,6 @@
 >key:https://gateway.ewt360.com/api/videoplayerprod/videoplayer/getPlayerGlobalConf 动态获取secret sessionId作为
 标识
 
-构造app端>action=1&duration=stay_time&mediaTime=mediaTime&mstid=token&platform=2&signatureMethod=HMAC-SHA1&signatureVersion=1.0&timestamp=当前毫秒时间戳&version=2022-08-02
+构造app端
+
+>action=1&duration=stay_time&mediaTime=mediaTime&mstid=token&platform=2&signatureMethod=HMAC-SHA1&signatureVersion=1.0&timestamp=当前毫秒时间戳&version=2022-08-02
