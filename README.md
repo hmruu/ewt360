@@ -26,3 +26,5 @@
 构造app端
 
 >action=1&duration=stay_time&mediaTime=mediaTime&mstid=token&platform=2&signatureMethod=HMAC-SHA1&signatureVersion=1.0&timestamp=当前毫秒时间戳&version=2022-08-02
+
+其实现在市面上应该有别的工具可以刷课，有人跟我说过，刷视频也刷到过，不过大抵是要钱的来着吧，原理应该都是这个原理，要是有人能根据这个真研究出来到底怎么回事，我倒也挺高兴的，毕竟研究这个我头发都要掉光了，不过要是不是这条思路，我真的要哭了
