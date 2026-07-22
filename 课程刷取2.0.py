@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """
 EWT360
-
 """
 
 import math
@@ -11,6 +10,10 @@ import random
 import hmac
 import hashlib
 import requests
+
+# 监测检查配置
+REPORT_URL = "https://gateway.ewt360.com/api/homeworkprod/homework/student/reportVideoPoint"
+REPORT_KEY = "4dcc69ed56d6"
 
 
 # ==================== 配置 ====================
@@ -22,7 +25,6 @@ def get_config():
 
     token = input("请输入 token: ").strip()
     homework_id = input("请输入 homework 参数: ").strip()
-    # 支持逗号分隔
     lesson_ids_str = input("请输入 lesson_id 参数 (多个用逗号分隔): ").strip()
     bizcode = input("请输入 bizcode 参数: ").strip()
 
@@ -260,6 +262,29 @@ def submit_round(token, session_id, user_id, school_id, lesson_id, bizcode,
     return url, headers, body
 
 
+def report_video_point(token, homework_id, lesson_id):
+    """监测上报/打点上报接口"""
+    ts = int(time.time() * 1000)
+    headers = {
+        "Content-Type": "application/json",
+        "token": token,
+        "timestamp": str(ts),
+        "sign": hashlib.md5(f"{ts}{REPORT_KEY}".encode()).hexdigest(),
+    }
+    body = {
+        "homeworkId": homework_id,
+        "lessonId": lesson_id,
+        "type": 1,
+        "platform": 2,
+        "seriousCheckResult": 2,
+    }
+    try:
+        resp = requests.post(REPORT_URL, json=body, headers=headers, timeout=15)
+        print(f"      ReportPoint -> Code {resp.status_code} | {resp.text[:100]}")
+    except Exception as e:
+        print(f"      [ERROR] 监测上报异常: {e}")
+
+
 # ==================== 单个课程处理逻辑 ====================
 def process_single_lesson(token, homework_id, lesson_id, bizcode, school_id, user_id, secret, session_id):
     """处理单个课程的播放流程"""
@@ -288,6 +313,8 @@ def process_single_lesson(token, homework_id, lesson_id, bizcode, school_id, use
 
     if current_play >= finish_need:
         print("[INFO] 进度已达标，无需刷课")
+        # 如果已经达标，触发一次监测上报以确保记录生效
+        report_video_point(token, homework_id, lesson_id)
         return True
 
     # 计算还需多少轮
@@ -338,6 +365,11 @@ def process_single_lesson(token, homework_id, lesson_id, bizcode, school_id, use
         except Exception as e:
             print(f"      [ERROR] 请求发生异常: {e}")
 
+        # 如果是最后一轮发包，执行监测上报操作
+        if is_last:
+            print("      [ACTION] 正在发送最后一包监测数据 (reportVideoPoint)...")
+            report_video_point(token, homework_id, lesson_id)
+
         # 校验 playTime 是否增长
         time.sleep(1)
         task = get_task_info(token, school_id, homework_id, lesson_id, content_type)
@@ -354,6 +386,9 @@ def process_single_lesson(token, homework_id, lesson_id, bizcode, school_id, use
             # 提前达标则结束
             if new_play >= finish_need:
                 print(f"\n[SUCCESS] 当前课程已达标! 当前 {new_play}ms >= 目标 {finish_need}ms")
+                # 如果不是最后一轮但提前达标了，补发一次监测
+                if not is_last:
+                    report_video_point(token, homework_id, lesson_id)
                 return True
 
         # 间隔 60s 倒计时
@@ -428,3 +463,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
